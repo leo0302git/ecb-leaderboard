@@ -503,7 +503,7 @@
             <span class="tag">${fmtCount(row.failedN)} failures</span>
           </div>
           <div class="mini-list">
-            ${row.hardest.map((task) => `<span>${escapeHtml(task.subclassName || task.taskId)} · ${fmtScore(task.primaryScore)}</span>`).join("")}
+            ${row.hardest.map((task) => `<span>${escapeHtml(task.subclassName || task.taskId)} · ${fmtCount(task.taskCount)} tasks · ${fmtScore(task.primaryScore)}</span>`).join("")}
           </div>
         </article>
       `)

@@ -326,9 +326,44 @@ def build_task_classes(rows: list[dict[str, str]]) -> list[dict[str, Any]]:
             if values:
                 combo_avgs.append((sum(values) / len(values), combo))
         combo_avgs.sort(reverse=True)
+        subclass_groups: dict[str, list[dict[str, str]]] = defaultdict(list)
+        for row in class_rows:
+            key = row.get("subclass_name") or row.get("subclass_id") or row.get("task_id") or "Unknown subclass"
+            subclass_groups[key].append(row)
+        hardest_subclasses = []
+        for subclass_name, subclass_rows in subclass_groups.items():
+            subclass_scores = [
+                score
+                for score in (to_float(r.get("primary_attr_fail0_avg")) for r in subclass_rows)
+                if score is not None
+            ]
+            if not subclass_scores:
+                continue
+            representative = min(
+                subclass_rows,
+                key=lambda r: to_float(r.get("primary_attr_fail0_avg"), 99.0) or 99.0,
+            )
+            subclass_combo_avgs = []
+            for combo in combos:
+                values = [to_float(r.get(combo)) for r in subclass_rows]
+                values = [v for v in values if v is not None]
+                if values:
+                    subclass_combo_avgs.append((sum(values) / len(values), combo))
+            subclass_combo_avgs.sort(reverse=True)
+            hardest_subclasses.append(
+                {
+                    "taskId": representative.get("task_id", ""),
+                    "subclassName": subclass_name,
+                    "businessTask": representative.get("business_task", ""),
+                    "primaryScore": sum(subclass_scores) / len(subclass_scores),
+                    "taskCount": len(subclass_rows),
+                    "bestCombo": subclass_combo_avgs[0][1] if subclass_combo_avgs else representative.get("score_max_combo", ""),
+                    "bestScore": subclass_combo_avgs[0][0] if subclass_combo_avgs else to_float(representative.get("score_max")),
+                }
+            )
         hardest = sorted(
-            class_rows,
-            key=lambda r: to_float(r.get("primary_attr_fail0_avg"), 99.0) or 99.0,
+            hardest_subclasses,
+            key=lambda row: row["primaryScore"] if row["primaryScore"] is not None else 99.0,
         )[:3]
         result.append(
             {
@@ -340,17 +375,7 @@ def build_task_classes(rows: list[dict[str, str]]) -> list[dict[str, Any]]:
                 "sandboxExcludedN": infra,
                 "winner": combo_avgs[0][1] if combo_avgs else "",
                 "winnerScore": combo_avgs[0][0] if combo_avgs else None,
-                "hardest": [
-                    {
-                        "taskId": r.get("task_id", ""),
-                        "subclassName": r.get("subclass_name", ""),
-                        "businessTask": r.get("business_task", ""),
-                        "primaryScore": to_float(r.get("primary_attr_fail0_avg")),
-                        "bestCombo": r.get("score_max_combo", ""),
-                        "bestScore": to_float(r.get("score_max")),
-                    }
-                    for r in hardest
-                ],
+                "hardest": hardest,
             }
         )
     result.sort(key=lambda row: row["primaryScore"] or 0.0, reverse=True)
