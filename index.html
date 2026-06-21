@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EnterpriseClawBench Leaderboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <nav class="topbar">
+    <div class="container nav-inner">
+      <a class="brand" href="#top">Enterprise<span>ClawBench</span></a>
+      <button class="menu-button" id="menu-toggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="#leaderboard">Leaderboard</a>
+        <a href="#comparison">Comparison</a>
+        <a href="#task-classes">Task Classes</a>
+        <a href="#diagnostics">Diagnostics</a>
+        <a href="#cases">Cases</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero" id="top">
+    <div class="container hero-grid">
+      <div>
+        <div class="eyebrow">Enterprise Agent Benchmark</div>
+        <h1>EnterpriseClawBench</h1>
+        <p class="hero-lead">A release-oriented leaderboard for evaluating coding agents on realistic enterprise workflows, file deliverables, and multimodal business artifacts.</p>
+        <div class="hero-actions">
+          <a class="btn primary" href="#leaderboard">View Leaderboard</a>
+          <a class="btn" href="#comparison">Explore Metrics</a>
+        </div>
+      </div>
+      <div class="hero-panel" aria-label="Benchmark summary">
+        <div class="hero-stat">
+          <span class="label">Primary board</span>
+          <strong id="hero-board">hard120</strong>
+        </div>
+        <div class="hero-stat">
+          <span class="label">Top score</span>
+          <strong id="hero-score">-</strong>
+        </div>
+        <div class="hero-stat">
+          <span class="label">Best config</span>
+          <strong id="hero-combo">-</strong>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="band" id="leaderboard">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Main Leaderboard</h2>
+            <p>Ranked by the primary attributable-failure-zero score used in the EnterpriseClawBench report.</p>
+          </div>
+          <div class="source-pill" id="source-pill">Source: loading</div>
+        </div>
+
+        <div class="kpi-grid" id="summary-metrics"></div>
+
+        <div class="podium" id="podium"></div>
+
+        <div class="panel table-panel">
+          <div class="panel-head">
+            <div>
+              <h3>Agent-model configurations</h3>
+              <p id="metric-note">Primary score combines text and visual judge routing with attributable failures scored as zero.</p>
+            </div>
+            <div class="controls">
+              <label>
+                Harness
+                <select id="harness-filter"></select>
+              </label>
+              <label>
+                Rank by
+                <select id="rank-metric"></select>
+              </label>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="leaderboard-table">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Model</th>
+                  <th>Harness</th>
+                  <th>Primary</th>
+                  <th>Completed Avg</th>
+                  <th>Completion</th>
+                  <th>Visual N</th>
+                  <th>Text N</th>
+                  <th>Cost RMB</th>
+                  <th>Cost / Completed</th>
+                  <th>Median Time</th>
+                </tr>
+              </thead>
+              <tbody id="leaderboard-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="comparison">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Performance Cockpit</h2>
+            <p>Multiple views of score, cost, runtime, reliability, and judge routing.</p>
+          </div>
+        </div>
+        <div class="grid two">
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Top Scores</h3>
+                <p>Highest primary scores across configurations.</p>
+              </div>
+            </div>
+            <div class="bar-list" id="score-bars"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Score vs Cost</h3>
+                <p>Each point is one model-harness configuration.</p>
+              </div>
+            </div>
+            <div class="scatter" id="score-cost-scatter" aria-label="Score versus cost scatter plot"></div>
+            <div class="legend" id="scatter-legend"></div>
+            <div class="legend shape-legend" id="model-shape-legend"></div>
+          </div>
+        </div>
+        <div class="grid two follow-grid">
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Score vs Runtime</h3>
+                <p>Highlights configurations that are both strong and fast.</p>
+              </div>
+            </div>
+            <div class="scatter" id="score-runtime-scatter" aria-label="Score versus runtime scatter plot"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Harness Heatmap</h3>
+                <p>Aggregated metrics by execution harness.</p>
+              </div>
+            </div>
+            <div class="heatmap" id="harness-heatmap"></div>
+          </div>
+        </div>
+        <div class="grid two follow-grid">
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Score Distribution</h3>
+                <p>Primary-score bins across all configurations.</p>
+              </div>
+            </div>
+            <div class="distribution-bars" id="distribution-bars"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Five-Dimension Profile</h3>
+                <p>Model-level semantic diagnostics from the paper figure data.</p>
+              </div>
+              <div class="controls compact">
+                <label>
+                  Combo
+                  <select id="dimension-select"></select>
+                </label>
+              </div>
+            </div>
+            <div class="dimension-context" id="dimension-context"></div>
+            <div class="radar-wrap">
+              <svg class="radar" id="dimension-radar" viewBox="0 0 360 300" role="img" aria-label="Dimension radar chart"></svg>
+              <div class="dimension-bars" id="dimension-bars"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="band" id="task-classes">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Task Class Breakdown</h2>
+            <p>Enterprise task categories derived from the paper-copied task score matrix.</p>
+          </div>
+        </div>
+        <div class="class-grid" id="class-grid"></div>
+
+        <div class="grid two follow-grid">
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Hardest Tasks</h3>
+                <p>Lowest primary attributable-failure-zero averages.</p>
+              </div>
+            </div>
+            <div class="task-list" id="hardest-list"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Highest Variance Tasks</h3>
+                <p>Tasks with the widest configuration spread.</p>
+              </div>
+            </div>
+            <div class="task-list" id="variance-list"></div>
+          </div>
+        </div>
+
+        <div class="grid two follow-grid">
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Efficiency Board</h3>
+                <p>Best score per RMB and score per minute.</p>
+              </div>
+            </div>
+            <div class="mini-board" id="efficiency-board"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Reliability Board</h3>
+                <p>Completion, missing primary evidence, and warning-aware ranking.</p>
+              </div>
+            </div>
+            <div class="mini-board" id="reliability-board"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="diagnostics">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Benchmark Diagnostics</h2>
+            <p>Construction funnel and artifact-type score patterns from paper-copied figure data.</p>
+          </div>
+        </div>
+        <div class="grid two">
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Construction Funnel</h3>
+                <p>Raw enterprise TaskInstances through benchmark packaging.</p>
+              </div>
+            </div>
+            <div class="funnel-view" id="funnel-view"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Artifact Insights</h3>
+                <p>Model-by-artifact score heatmap distilled from Figure 6 data.</p>
+              </div>
+            </div>
+            <div class="artifact-insights" id="artifact-insights"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="cases">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Case Studies</h2>
+            <p>Representative generated artifacts copied from the paper bundle.</p>
+          </div>
+        </div>
+        <div class="case-tabs" id="case-tabs"></div>
+        <div class="case-panel" id="case-panel"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <span>EnterpriseClawBench Leaderboard</span>
+      <span id="generated-at">Generated: -</span>
+    </div>
+  </footer>
+
+  <script src="ecb-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
