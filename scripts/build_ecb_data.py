@@ -438,10 +438,20 @@ def build_task_classes(rows: list[dict[str, str]]) -> list[dict[str, Any]]:
                     "bestScore": subclass_combo_avgs[0][0] if subclass_combo_avgs else to_float(representative.get("score_max")),
                 }
             )
-        hardest = sorted(
-            hardest_subclasses,
-            key=lambda row: row["primaryScore"] if row["primaryScore"] is not None else 99.0,
-        )[:3]
+        eligible_hardest = [row for row in hardest_subclasses if to_int(row.get("taskCount")) >= 3]
+        if eligible_hardest:
+            hardest = sorted(
+                eligible_hardest,
+                key=lambda row: row["primaryScore"] if row["primaryScore"] is not None else 99.0,
+            )[:3]
+        else:
+            hardest = sorted(
+                hardest_subclasses,
+                key=lambda row: (
+                    -to_int(row.get("taskCount")),
+                    row["primaryScore"] if row["primaryScore"] is not None else 99.0,
+                ),
+            )[:1]
         result.append(
             {
                 "id": class_id,

@@ -140,7 +140,7 @@
             <div class="panel-head">
               <div>
                 <h3>Score vs Runtime</h3>
-                <p>Highlights configurations that are both strong and fast.</p>
+                <p>Each point is one model-harness configuration.</p>
               </div>
             </div>
             <div class="scatter" id="score-runtime-scatter" aria-label="Score versus runtime scatter plot"></div>
@@ -202,8 +202,8 @@
           <div class="panel">
             <div class="panel-head">
               <div>
-                <h3>Hardest Tasks</h3>
-                <p>Lowest primary attributable-failure-zero averages.</p>
+                <h3>Hardest Subclasses</h3>
+                <p>Subclasses with the lowest average score.</p>
               </div>
             </div>
             <div class="task-list" id="hardest-list"></div>
@@ -212,7 +212,7 @@
             <div class="panel-head">
               <div>
                 <h3>Highest Variance Tasks</h3>
-                <p>Tasks with the widest configuration spread.</p>
+                <p>Tasks where model-harness configurations disagree the most.</p>
               </div>
             </div>
             <div class="task-list" id="variance-list"></div>
@@ -224,7 +224,7 @@
             <div class="panel-head">
               <div>
                 <h3>Efficiency Board</h3>
-                <p>Best score per RMB and score per minute.</p>
+                <p>Configurations with the highest primary score per RMB spent.</p>
               </div>
             </div>
             <div class="mini-board" id="efficiency-board"></div>
