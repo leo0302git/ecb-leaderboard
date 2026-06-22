@@ -44,6 +44,19 @@ def first_existing(candidates: list[tuple[str, Path]]) -> tuple[str, Path]:
     raise FileNotFoundError(f"No source file found. Searched:\n{searched}")
 
 
+def public_source_tiers(source_tiers: dict[str, str]) -> dict[str, str]:
+    labels = {
+        "paper_copied": "release_bundle",
+        "report_data": "normalized_report_data",
+        "raw_run": "raw_run_evidence",
+    }
+    return {
+        key: labels.get(value, value)
+        for key, value in source_tiers.items()
+        if not key.endswith("_path")
+    }
+
+
 def to_float(value: Any, default: float | None = None) -> float | None:
     if value is None or value == "":
         return default
@@ -84,6 +97,70 @@ def class_label(class_id: str) -> str:
         "technical_system_tooling": "Technical Tooling",
     }
     return labels.get(class_id, class_id.replace("_", " ").title())
+
+
+SUBCLASS_LABELS = {
+    "OKR策略与项目规划": "OKR strategy and project planning",
+    "OKR管理与评估": "OKR management and review",
+    "PPT优化与转化": "Slide optimization and conversion",
+    "业务分析与评估": "Business analysis and evaluation",
+    "产品与人才分析": "Product and talent analysis",
+    "产品与架构评估": "Product and architecture review",
+    "产品命名与架构设计": "Product naming and architecture design",
+    "产品设计方案完善": "Product design proposal refinement",
+    "优化文案与数据核查": "Copy refinement and data verification",
+    "会计分录处理": "Accounting entry processing",
+    "会议与接待文档": "Meeting and reception documentation",
+    "内容创作与整理": "Content creation and organization",
+    "决策方案制定": "Decision proposal development",
+    "前端页面生成": "Frontend page generation",
+    "发布计划与沟通管理": "Release planning and communication",
+    "周报与OKR文档管理": "Weekly report and OKR documentation",
+    "周报内容评估": "Weekly report review",
+    "基准评估与分析": "Benchmark evaluation and analysis",
+    "实验方案撰写与调研": "Experiment planning and research",
+    "技术文档与代码分析": "Technical documentation and code analysis",
+    "技术解读与评估": "Technical interpretation and evaluation",
+    "技术问题解答": "Technical Q&A",
+    "技能安装与配置": "Skill installation and configuration",
+    "技能文档管理": "Skill documentation management",
+    "接待与任务优化": "Reception planning and task optimization",
+    "撰写Agent提示词": "Agent prompt writing",
+    "撰写PRD文档": "PRD writing",
+    "撰写产品方案文档": "Product proposal writing",
+    "撰写分析报告": "Analytical report writing",
+    "数字交付设计": "Digital deliverable design",
+    "数据整理与校验": "Data organization and validation",
+    "文档修订与撰写": "Document revision and writing",
+    "文档审核与校对": "Document review and proofreading",
+    "文档撰写与修订": "Document writing and revision",
+    "汇报文档制作": "Presentation document creation",
+    "汇报材料撰写": "Presentation material writing",
+    "活动详情页面制作": "Event detail page creation",
+    "生成前端展示页面": "Frontend showcase page generation",
+    "生成系统提示": "System prompt generation",
+    "生成组织架构图": "Organization chart generation",
+    "知识概念与文档总结": "Knowledge and document summarization",
+    "研究与总结": "Research and synthesis",
+    "竞品分析与调研": "Competitor analysis and research",
+    "管理层报告撰写": "Executive report writing",
+    "组织支持与报告生成": "Organizational support and reporting",
+    "经营数据分析": "Operational data analysis",
+    "表格整理与转换": "Spreadsheet cleanup and conversion",
+    "解读技术文档": "Technical document interpretation",
+    "课题描述优化": "Research topic refinement",
+    "财务与数据分析": "Financial and data analysis",
+    "长会纪要与待办": "Long-meeting minutes and action items",
+    "面试评价生成": "Interview evaluation generation",
+    "项目推进与策划": "Project planning and execution",
+    "项目立项与文档撰写": "Project initiation and documentation",
+}
+
+
+def subclass_label(value: str) -> str:
+    if not value:
+        return "Unspecified subclass"
+    return SUBCLASS_LABELS.get(value, value)
 
 
 def load_leaderboard() -> tuple[dict[str, Any], dict[str, str]]:
@@ -353,8 +430,8 @@ def build_task_classes(rows: list[dict[str, str]]) -> list[dict[str, Any]]:
             hardest_subclasses.append(
                 {
                     "taskId": representative.get("task_id", ""),
-                    "subclassName": subclass_name,
-                    "businessTask": representative.get("business_task", ""),
+                    "subclassName": subclass_label(subclass_name),
+                    "businessTask": "",
                     "primaryScore": sum(subclass_scores) / len(subclass_scores),
                     "taskCount": len(subclass_rows),
                     "bestCombo": subclass_combo_avgs[0][1] if subclass_combo_avgs else representative.get("score_max_combo", ""),
@@ -388,8 +465,8 @@ def build_task_extremes(rows: list[dict[str, str]]) -> dict[str, list[dict[str, 
             "taskId": row.get("task_id", ""),
             "classId": row.get("big_class", ""),
             "classLabel": class_label(row.get("big_class", "")),
-            "subclassName": row.get("subclass_name", ""),
-            "businessTask": row.get("business_task", ""),
+            "subclassName": subclass_label(row.get("subclass_name", "")),
+            "businessTask": "",
             "primaryScore": to_float(row.get("primary_attr_fail0_avg")),
             "validScore": to_float(row.get("primary_valid_avg")),
             "scoreStd": to_float(row.get("score_std")),
@@ -573,12 +650,27 @@ def load_extra_visual_data() -> tuple[dict[str, Any], dict[str, str]]:
         values = [to_float(row.get(dim)) for row in dimension_rows]
         values = [v for v in values if v is not None]
         overall.append({"dimension": dim, "value": sum(values) / len(values) if values else 0})
+    funnel_order = [
+        "Raw MetaAgent TaskInstances",
+        "Length filter",
+        "Public-Network Gate",
+        "Fixture lookup",
+        "Redaction recovery",
+        "Mechanical Join",
+        "Self-Contained Review",
+        "Package + Preflight",
+    ]
+    funnel_order_index = {stage: idx for idx, stage in enumerate(funnel_order)}
+    funnel_stages = sorted(
+        funnel_json.get("data", {}).get("stages", []),
+        key=lambda row: funnel_order_index.get(str(row.get("stage", "")), len(funnel_order_index)),
+    )
 
     return (
         {
             "funnel": {
                 "title": funnel_json.get("title", ""),
-                "stages": funnel_json.get("data", {}).get("stages", []),
+                "stages": funnel_stages,
                 "note": funnel_json.get("data", {}).get("note", ""),
             },
             "artifactInsights": {
@@ -624,15 +716,6 @@ def copy_case_assets() -> list[dict[str, Any]]:
             "match": "fb-293915333729767424_i0101__openclaw__kimi-k2.6__ai_executive_study_tour_preview_html_playwright_fullpage.png",
         },
         {
-            "key": "spreadsheet",
-            "title": "Tonglian Task Spreadsheet",
-            "taskId": "fb-296965480151789568_i0013",
-            "model": "Claude Code / Opus 4.6",
-            "artifact": "XLSX sheet render",
-            "lesson": "Spreadsheet tasks expose file-format fidelity and business-data organization, not just natural-language reasoning.",
-            "match": "fb-296965480151789568_i0013__claudecode__opus-4.6__tonglian-tasks-summary__sheet_01__playwright.png",
-        },
-        {
             "key": "skill-standards",
             "title": "Skill Creation Standards",
             "taskId": "fb-297293965693100032_i0009",
@@ -640,15 +723,6 @@ def copy_case_assets() -> list[dict[str, Any]]:
             "artifact": "PDF summary pages",
             "lesson": "Document synthesis cases require faithful extraction, clean structure and publishable formatting.",
             "match": "fb-297293965693100032_i0009__codex__gpt-5.5__skill_creation_standards_summary_page-1.png",
-        },
-        {
-            "key": "brand-positioning",
-            "title": "Frontis Brand Positioning",
-            "taskId": "fb-300327546568937472_i0008",
-            "model": "Hermes / Haiku 4.5",
-            "artifact": "brand HTML",
-            "lesson": "Brand and positioning tasks combine visual hierarchy, copy quality and concrete deliverable packaging.",
-            "match": "fb-300327546568937472_i0008__hermes__haiku-4.5__frontis-brand-positioning_html_playwright_fullpage.png",
         },
     ]
 
@@ -699,14 +773,16 @@ def main() -> None:
     )
 
     meta = dict(leaderboard.get("meta", {}))
+    meta["source"] = "public release leaderboard data"
+    meta.pop("summary_source", None)
     meta.update(
         {
             "site_generated_at": datetime.now().isoformat(timespec="seconds"),
-            "source_tiers": {**leaderboard_source, **task_source, **visual_sources},
+            "source_tiers": public_source_tiers({**leaderboard_source, **task_source, **visual_sources}),
             "lookup_policy": [
-                "paper_copied: frontis-bench/docs and docs/emnlp_industry_outline_bundle",
-                "report_data: frontis-bench/outputs/report_data",
-                "raw_run: frontis-bench/outputs/matrix_runs",
+                "release_bundle: curated benchmark data bundled for the public leaderboard",
+                "report_data: normalized benchmark analysis tables",
+                "raw_run: original run evidence used only when normalized data is unavailable",
             ],
         }
     )

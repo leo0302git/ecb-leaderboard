@@ -97,6 +97,32 @@ class StaticSiteContractTest(unittest.TestCase):
         html = (ROOT / "index.html").read_text(encoding="utf-8")
         self.assertNotIn("<th>Warnings</th>", html)
 
+    def test_public_page_has_no_internal_or_sensitive_copy(self):
+        public_text = "\n".join(
+            [
+                (ROOT / "index.html").read_text(encoding="utf-8"),
+                (ROOT / "app.js").read_text(encoding="utf-8"),
+                (ROOT / "ecb-data.js").read_text(encoding="utf-8"),
+            ]
+        )
+        forbidden = [
+            "Tonglian",
+            "tonglian",
+            "Frontis Brand",
+            "frontis-brand",
+            "brand-positioning",
+            "paper Figure",
+            "copied paper",
+            "paper bundle",
+            "paper-copied",
+            "/hpc_data",
+            "Top completion",
+            "Best cost / completed",
+        ]
+        for item in forbidden:
+            self.assertNotIn(item, public_text)
+        self.assertIsNone(re.search(r"[\u4e00-\u9fff]", public_text))
+
 
 if __name__ == "__main__":
     unittest.main()

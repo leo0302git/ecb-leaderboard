@@ -138,8 +138,7 @@
     $("hero-score").textContent = fmtScore(data.summary.topScore);
     $("hero-combo").textContent = data.summary.topCombo || "-";
     $("generated-at").textContent = `Generated: ${data.meta.site_generated_at || "-"}`;
-    const tier = data.meta.source_tiers?.leaderboard || "-";
-    $("source-pill").textContent = `Source tier: ${tier}`;
+    $("source-pill").textContent = "Data source: public benchmark release";
   }
 
   function renderSummary() {
@@ -148,8 +147,6 @@
       ["Configurations", data.summary.comboCount],
       ["Harnesses", data.summary.harnessCount],
       ["Task classes", data.summary.taskClassCount],
-      ["Top completion", data.summary.topCompletion, "percent"],
-      ["Best cost / completed", data.summary.bestCostPerCompleted, "currency"],
     ];
     $("summary-metrics").innerHTML = items
       .map(([label, value, type]) => `
@@ -470,8 +467,8 @@
       return `<text x="${cx + Math.cos(angle) * (radius + 34)}" y="${cy + Math.sin(angle) * (radius + 24)}" text-anchor="middle">${escapeHtml(row.dimension)}</text>`;
     }).join("");
     $("dimension-context").textContent = selected
-      ? `${selected.combo} · ${selected.harnessLabel} · paper Figure 7 ${selected.sourceLevel === "model" ? "model-level" : "overall fallback"} values · score ${fmtScore(selected.primaryScore)}`
-      : "Overall paper Figure 7 values";
+      ? `${selected.combo} · ${selected.harnessLabel} · ${selected.sourceLevel === "model" ? "model-level" : "benchmark-level fallback"} dimension values · score ${fmtScore(selected.primaryScore)}`
+      : "Benchmark-level dimension values";
     $("dimension-radar").innerHTML = `
       ${grid}${spokes}
       <polygon points="${points.map(([x, y]) => `${x},${y}`).join(" ")}" fill="rgba(46,156,154,.22)" stroke="#2E9C9A" stroke-width="3"></polygon>
@@ -591,7 +588,7 @@
     }
     const media = selected.image
       ? `<div class="case-image"><img src="${escapeHtml(selected.image)}" alt="${escapeHtml(selected.title)} screenshot"></div>`
-      : `<div class="case-image empty-asset">Asset not found in copied paper bundle</div>`;
+      : `<div class="case-image empty-asset">Public artifact preview unavailable</div>`;
     $("case-panel").innerHTML = `
       <div class="case-copy">
         <div class="tag">${escapeHtml(selected.taskId)}</div>
